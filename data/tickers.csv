@@ -1,0 +1,16 @@
+symbol,name,sector,country,currency,exchange
+NESN.SW,Nestle,Consumer Staples,CH,CHF,SIX
+NOVN.SW,Novartis,Health Care,CH,CHF,SIX
+RO.SW,Roche,Health Care,CH,CHF,SIX
+UBSG.SW,UBS Group,Financials,CH,CHF,SIX
+ZURN.SW,Zurich Insurance,Financials,CH,CHF,SIX
+ABBN.SW,ABB,Industrials,CH,CHF,SIX
+CFR.SW,Richemont,Consumer Discretionary,CH,CHF,SIX
+LONN.SW,Lonza,Health Care,CH,CHF,SIX
+ENI.MI,Eni,Energy,IT,EUR,Borsa Italiana
+ENEL.MI,Enel,Utilities,IT,EUR,Borsa Italiana
+ISP.MI,Intesa Sanpaolo,Financials,IT,EUR,Borsa Italiana
+UCG.MI,UniCredit,Financials,IT,EUR,Borsa Italiana
+STLAM.MI,Stellantis,Consumer Discretionary,IT,EUR,Borsa Italiana
+RACE.MI,Ferrari,Consumer Discretionary,IT,EUR,Borsa Italiana
+G.MI,Generali,Financials,IT,EUR,Borsa Italiana
