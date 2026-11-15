@@ -309,45 +309,13 @@ replace_table("""
 
 # CELL ********************
 
-def report(check_name, passed, detail):
-    if passed:
-        print("OK  ", check_name, "-", detail)
-    else:
-        print("FAIL", check_name, "-", detail)
+# Data quality checks moved to nb_04_dq (decision 14/11).
+# Here we only show what this run produced.
+gold_tables = ["gold.dim_ticker", "gold.dim_date", "gold.fact_daily_price", "gold.latest_snapshot"]
 
+for table_name in gold_tables:
+    print(table_name, spark.table(table_name).count(), "rows")
 
-fact = spark.table("gold.fact_daily_price")
-
-# 1. Grain: one row per ticker per day
-n_fact = fact.count()
-n_keys = fact.select("ticker", "date").distinct().count()
-report("grain", n_fact == n_keys, str(n_fact) + " rows, " + str(n_keys) + " distinct keys")
-
-# 2. Completeness: no row lost in the joins
-n_silver = spark.table("silver.prices").count()
-report("completeness", n_fact == n_silver, str(n_fact) + " fact rows vs " + str(n_silver) + " silver rows")
-
-# 3. Every row has an exchange rate
-n_null_fx = fact.filter(F.col("rate_to_chf").isNull()).count()
-report("fx coverage", n_null_fx == 0, str(n_null_fx) + " rows without rate_to_chf")
-
-# 4. Referential integrity: every key of the fact exists in its dimension (anti join = rows WITHOUT a match)
-n_missing_dates = spark.sql("""
-    SELECT COUNT(*) AS n
-    FROM gold.fact_daily_price f
-    LEFT ANTI JOIN gold.dim_date d ON f.date_key = d.date_key
-""").first()["n"]
-
-n_missing_tickers = spark.sql("""
-    SELECT COUNT(*) AS n
-    FROM gold.fact_daily_price f
-    LEFT ANTI JOIN gold.dim_ticker t ON f.ticker = t.ticker
-""").first()["n"]
-
-report("keys", n_missing_dates == 0 and n_missing_tickers == 0,
-       str(n_missing_dates) + " missing dates, " + str(n_missing_tickers) + " missing tickers")
-
-# 5. The result
 display(spark.table("gold.latest_snapshot").orderBy("ticker"))
 
 # METADATA ********************

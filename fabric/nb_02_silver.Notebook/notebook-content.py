@@ -294,6 +294,9 @@ else:
 
 # CELL ********************
 
+# Data quality checks moved to nb_04_dq (decision 14/11).
+# What stays here is about THIS run only.
+
 # 1. Row counts
 for table_name in [SILVER_TICKERS, SILVER_PRICES, SILVER_FX, REJECTED_PRICES, REJECTED_FX]:
     if spark.catalog.tableExists(table_name):
@@ -301,26 +304,16 @@ for table_name in [SILVER_TICKERS, SILVER_PRICES, SILVER_FX, REJECTED_PRICES, RE
     else:
         print(table_name, "does not exist yet (no rows rejected so far)")
 
-# 2. Key must be unique: number of rows = number of distinct keys
-checks = [(SILVER_PRICES, ["ticker", "date"]), (SILVER_FX, ["currency", "date"])]
-
-for table_name, keys in checks:
-    df = spark.table(table_name)
-    n_rows = df.count()
-    n_keys = df.select(keys).distinct().count()
-    if n_rows == n_keys:
-        print("OK  ", table_name, "key is unique")
-    else:
-        print("FAIL", table_name, "has", n_rows - n_keys, "duplicate keys")
-
-# 3. Reconciliation of this run: deduplicated rows = valid + rejected
+# 2. Reconciliation of this run: deduplicated rows = valid + rejected
+#    It stays here because run_stats exists only in memory during this run:
+#    nb_04_dq cannot see it.
 for name, stats in run_stats.items():
     if stats["deduped"] == stats["valid"] + stats["rejected"]:
         print("OK  ", name, "reconciled:", stats)
     else:
         print("FAIL", name, "rows lost or created:", stats)
 
-# 4. Why rows were rejected (if any)
+# 3. Why rows were rejected (if any)
 if spark.catalog.tableExists(REJECTED_PRICES):
     display(spark.table(REJECTED_PRICES).groupBy("reject_reason").count())
 
