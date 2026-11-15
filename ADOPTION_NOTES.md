@@ -35,4 +35,6 @@ Format: date · what I tried · what blocked me · how I solved it
 
 - 2026-11-12 · Append RO.SW prices to bronze.prices_raw · DELTA_FAILED_TO_MERGE_FIELDS on 'volume': first load was int64 (bigint), RO.SW had missing volumes so pandas made it float64 (double) · Added a fixed bronze schema contract: NaN → null and explicit casts before every write. Lesson: never let pandas type inference define a Delta table's schema
 
+- 2026-11-14 · Moved data quality checks into a dedicated notebook · Rejected tables don’t exist until the first reject, so a naive check would error · Treated a missing rejected table as “passed, 0 rows” and documented it.
+
 - 2026-11-12 · Append RO.SW prices to bronze.prices_raw · DELTA_FAILED_TO_MERGE_FIELDS on 'volume': yf.download aligns several tickers on one calendar, so different holidays (CH vs IT) create NaNs and pandas turns volume into float64; the first load had created the column as double · Dropped the bronze table and reloaded it with a fixed schema contract (NaN → null, explicit casts before every write). Lesson: never let pandas type inference define a Delta table's schema
