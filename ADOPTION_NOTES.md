@@ -38,3 +38,15 @@ Format: date · what I tried · what blocked me · how I solved it
 - 2026-11-14 · Moved data quality checks into a dedicated notebook · Rejected tables don’t exist until the first reject, so a naive check would error · Treated a missing rejected table as “passed, 0 rows” and documented it.
 
 - 2026-11-12 · Append RO.SW prices to bronze.prices_raw · DELTA_FAILED_TO_MERGE_FIELDS on 'volume': yf.download aligns several tickers on one calendar, so different holidays (CH vs IT) create NaNs and pandas turns volume into float64; the first load had created the column as double · Dropped the bronze table and reloaded it with a fixed schema contract (NaN → null, explicit casts before every write). Lesson: never let pandas type inference define a Delta table's schema
+
+- 2026-11-15 · First pipeline run on a Sunday · ECB API returned HTTP 200 with an empty body (not 404) for a weekend-only range → pandas `EmptyDataError` in bronze; the retries ran but couldn't help because the error was deterministic · Treated an empty body as "no new data", same as 404.
+
+- 2026-11-15 · Second pipeline run · Bronze stayed queued for 10+ minutes: on an F2 capacity, the interactive sessions of five open notebooks were using the Spark cores the pipeline needed · Stopped the interactive sessions; rule: close them before running the pipeline.
+
+- 2026-11-15 · Linking `pipeline_runs` and `dq_results` on `run_id` · The pipeline was all green, but the join returned 0 checks for the pipeline run: the `run_id` base parameter was missing on the `nb_04_dq` activity, so the notebook generated its own id · Added `run_id = @pipeline().RunId`; lesson: verify the data links, not only the green status.
+
+- 2026-11-16 · Testing the failure branch by setting a 1-minute timeout on silver · Fabric rejects activity timeouts below 10 minutes · Added a temporary `raise` cell to silver, ran the pipeline, then removed the cell before committing.
+
+- 2026-11-16 · Querying gold tables from the SQL analytics endpoint · Metadata sync failed ("There is already an object named 'gold'", CREATE SCHEMA failed) on the schema-enabled lakehouse; new rows also showed up with a short delay · Retry sync / page reload; Spark notebooks read the Delta tables directly as a fallback.
+
+- 2026-11-16 · Reducing run time by dropping `env_market` and installing yfinance with `%pip` in bronze · `%pip install` is not supported in high concurrency mode and is disabled by default in pipeline runs · Did the opposite: `env_market` on all five notebooks + high concurrency for pipelines + one session tag → 546 s → 269 s.
