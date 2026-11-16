@@ -305,10 +305,17 @@ else:
     if response.status_code == 404:
         # ECB convention: 404 = no data in this period (weekend, holidays)
         print("No new FX observations")
-    else:
+
+    elif response.status_code >= 400:
         # Any other HTTP error stops the notebook (fail loudly)
         response.raise_for_status()
 
+    elif response.text.strip() == "":
+        # Found on 15/11: for a weekend-only period the ECB can answer
+        # 200 with an EMPTY body instead of 404 -> same meaning: no data
+        print("No new FX observations (empty response)")
+
+    else:
         fx_df = pd.read_csv(io.StringIO(response.text))
         fx_df = fx_df[["TIME_PERIOD", "CURRENCY", "OBS_VALUE"]]
         fx_df = fx_df.rename(columns={

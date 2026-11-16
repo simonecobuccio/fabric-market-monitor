@@ -1,0 +1,394 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "dcc8f06a-6f3b-9211-4a6d-e6e67db4b14b",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 120,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "nb_01_ingest_bronze",
+        "dependsOn": []
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "8caa909c-ba75-9d64-44dc-0ee01c625d48",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "nb_02_silver",
+        "dependsOn": [
+          {
+            "activity": "nb_01_ingest_bronze",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "e82118b8-27a4-9729-487f-faa0469ba99f",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "nb_03_gold",
+        "dependsOn": [
+          {
+            "activity": "nb_02_silver",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "8f6e987c-503c-9719-4260-5ff48fe81263",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "run_id": {
+              "value": {
+                "value": "@pipeline().RunId",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "nb_04_dq",
+        "dependsOn": [
+          {
+            "activity": "nb_03_gold",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "f4c146e2-99dd-9fc9-499e-5a20cb0d07a3",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "run_id": {
+              "value": {
+                "value": "@pipeline().RunId",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "pipeline_name": {
+              "value": "pl_daily_market",
+              "type": "string"
+            },
+            "trigger_time": {
+              "value": {
+                "value": "@pipeline().TriggerTime",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "status": {
+              "value": "succeeded",
+              "type": "string"
+            },
+            "failed_step": {
+              "value": "",
+              "type": "string"
+            },
+            "error_message": {
+              "value": "",
+              "type": "string"
+            },
+            "dq_status": {
+              "value": {
+                "value": "@json(activity('nb_04_dq').output.result.exitValue).overall_status",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "log_succeeded",
+        "dependsOn": [
+          {
+            "activity": "nb_04_dq",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "f4c146e2-99dd-9fc9-499e-5a20cb0d07a3",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "run_id": {
+              "value": {
+                "value": "@pipeline().RunId",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "pipeline_name": {
+              "value": "pl_daily_market",
+              "type": "string"
+            },
+            "trigger_time": {
+              "value": {
+                "value": "@pipeline().TriggerTime",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "status": {
+              "value": "failed",
+              "type": "string"
+            },
+            "failed_step": {
+              "value": "bronze",
+              "type": "string"
+            },
+            "error_message": {
+              "value": {
+                "value": "@activity('nb_01_ingest_bronze').error.message",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "log_failed_bronze",
+        "dependsOn": [
+          {
+            "activity": "nb_01_ingest_bronze",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "f4c146e2-99dd-9fc9-499e-5a20cb0d07a3",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "run_id": {
+              "value": {
+                "value": "@pipeline().RunId",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "pipeline_name": {
+              "value": "pl_daily_market",
+              "type": "string"
+            },
+            "trigger_time": {
+              "value": {
+                "value": "@pipeline().TriggerTime",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "status": {
+              "value": "failed",
+              "type": "string"
+            },
+            "failed_step": {
+              "value": "gold",
+              "type": "string"
+            },
+            "error_message": {
+              "value": {
+                "value": "@activity('nb_03_gold').error.message",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "log_failed_gold",
+        "dependsOn": [
+          {
+            "activity": "nb_03_gold",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "f4c146e2-99dd-9fc9-499e-5a20cb0d07a3",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "run_id": {
+              "value": {
+                "value": "@pipeline().RunId",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "pipeline_name": {
+              "value": "pl_daily_market",
+              "type": "string"
+            },
+            "trigger_time": {
+              "value": {
+                "value": "@pipeline().TriggerTime",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "status": {
+              "value": "failed",
+              "type": "string"
+            },
+            "failed_step": {
+              "value": "silver",
+              "type": "string"
+            },
+            "error_message": {
+              "value": {
+                "value": "@activity('nb_02_silver').error.message",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "log_failed_silver",
+        "dependsOn": [
+          {
+            "activity": "nb_02_silver",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "f4c146e2-99dd-9fc9-499e-5a20cb0d07a3",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "run_id": {
+              "value": {
+                "value": "@pipeline().RunId",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "pipeline_name": {
+              "value": "pl_daily_market",
+              "type": "string"
+            },
+            "trigger_time": {
+              "value": {
+                "value": "@pipeline().TriggerTime",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "status": {
+              "value": "failed",
+              "type": "string"
+            },
+            "failed_step": {
+              "value": "dq",
+              "type": "string"
+            },
+            "error_message": {
+              "value": {
+                "value": "@activity('nb_04_dq').error.message",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "log_failed_dq",
+        "dependsOn": [
+          {
+            "activity": "nb_04_dq",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
