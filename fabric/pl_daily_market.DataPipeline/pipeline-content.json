@@ -5,7 +5,8 @@
         "type": "TridentNotebook",
         "typeProperties": {
           "notebookId": "dcc8f06a-6f3b-9211-4a6d-e6e67db4b14b",
-          "workspaceId": "00000000-0000-0000-0000-000000000000"
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "sessionTag": "market"
         },
         "policy": {
           "timeout": "0.00:30:00",
@@ -21,7 +22,8 @@
         "type": "TridentNotebook",
         "typeProperties": {
           "notebookId": "8caa909c-ba75-9d64-44dc-0ee01c625d48",
-          "workspaceId": "00000000-0000-0000-0000-000000000000"
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "sessionTag": "market"
         },
         "policy": {
           "timeout": "0.00:30:00",
@@ -44,7 +46,8 @@
         "type": "TridentNotebook",
         "typeProperties": {
           "notebookId": "e82118b8-27a4-9729-487f-faa0469ba99f",
-          "workspaceId": "00000000-0000-0000-0000-000000000000"
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "sessionTag": "market"
         },
         "policy": {
           "timeout": "0.00:30:00",
@@ -76,7 +79,8 @@
               },
               "type": "string"
             }
-          }
+          },
+          "sessionTag": "market"
         },
         "policy": {
           "timeout": "0.00:30:00",
@@ -138,7 +142,8 @@
               },
               "type": "string"
             }
-          }
+          },
+          "sessionTag": "market"
         },
         "policy": {
           "timeout": "0.00:30:00",
@@ -196,7 +201,8 @@
               },
               "type": "string"
             }
-          }
+          },
+          "sessionTag": "market"
         },
         "policy": {
           "timeout": "0.00:30:00",
@@ -254,7 +260,8 @@
               },
               "type": "string"
             }
-          }
+          },
+          "sessionTag": "market"
         },
         "policy": {
           "timeout": "0.00:30:00",
@@ -312,7 +319,8 @@
               },
               "type": "string"
             }
-          }
+          },
+          "sessionTag": "market"
         },
         "policy": {
           "timeout": "0.00:30:00",
@@ -370,7 +378,8 @@
               },
               "type": "string"
             }
-          }
+          },
+          "sessionTag": "market"
         },
         "policy": {
           "timeout": "0.00:30:00",
